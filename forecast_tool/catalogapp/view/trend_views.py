@@ -66,22 +66,7 @@ class SaveTrendSet(APIView):
             print(values)
             values = [float(val) for val in values]
             print(data)
-            # for index, value in enumerate(values):
-            #     column_names = ['init_date', 'init_value', 'slope', 'c6', 'c5', 'c4', 'c3', 'c2']
-            #     object_type_property = column_names[index]
-            #     object_type_property = ObjectTypeProperty.objects.get(object_type_property_name=object_type_property)
-                
-            #     saved_objects.append({
-            #         'data_source_type': 'TR',
-            #         'data_source_id': data_source_id,
-            #         'object_type': object_type,
-            #         'object_instance': object_instance,
-            #         'object_type_property': object_type_property,
-            #         'value': value,
-            #         'date_time': 0,
-            #         'sub_data_source': sub_data_source,
-            #         'description': description
-            #     })
+
             for index, value in enumerate(values):
                 object_type_property = None
                 if sub_data_source == 'GOR':
