@@ -87,40 +87,48 @@ class UpdateScenario(APIView):
 class ExportScenario(APIView):
     
     def get(self, request, *args, **kwargs):
-        # Retrieve the chosen scenario name from the request
-        choose_scenario_name = request.GET.get('chooseScenario')
-        scenario = ScenarioClass.objects.get(scenario_name=choose_scenario_name)
+        try:
+            # Retrieve the chosen scenario name from the request
+            choose_scenario_name = request.GET.get('chooseScenario')
+            scenario = ScenarioClass.objects.get(scenario_name=choose_scenario_name)
 
-        # Retrieve the scenario ID or another unique identifier from the scenario
-        scenario_id = scenario.scenario_id  # Assuming the ScenarioClass object has an `id` attribute
+            # Retrieve the scenario ID or another unique identifier from the scenario
+            scenario_id = scenario.scenario_id  # Assuming the ScenarioClass object has an `id` attribute
 
-        # Define the scenario-specific folder path
-        scenario_folder_name = f"Scenario_{scenario_id}"  # You can customize the folder name format as needed
-        scenario_folder_path = os.path.join('C:/Users/user/Documents/KPO/Forecast', scenario_folder_name)
+            # Define the scenario-specific folder path
+            scenario_folder_name = f"Scenario_{scenario_id}"  # You can customize the folder name format as needed
+            scenario_folder_path = os.path.join('C:/Users/user/Documents/KPO/Forecast', scenario_folder_name)
 
-        # Define the source paths of the CSV files
-        source_paths = ['TrendEvent/Event.csv', 'TrendEvent/Trend.csv']
+            # Define the source paths of the CSV files
+            source_paths = ['TrendEvent/Events1.csv', 'TrendEvent/Trends1.csv']
 
-        # Define the destination paths within the scenario-specific folder
-        destination_paths = [
-            os.path.join(scenario_folder_path, 'Event.csv'),
-            os.path.join(scenario_folder_path, 'Trend.csv')
-        ]
+            # Define the destination paths within the scenario-specific folder
+            destination_paths = [
+                os.path.join(scenario_folder_path, 'Events1.csv'),
+                os.path.join(scenario_folder_path, 'Trends1.csv')
+            ]
 
-        # Create the scenario-specific folder if it does not already exist
-        os.makedirs(scenario_folder_path, exist_ok=True)
+            # Create the scenario-specific folder if it does not already exist
+            os.makedirs(scenario_folder_path, exist_ok=True)
 
-        # Generate the event and trend CSV files
-        self.get_event(scenario)
-        self.get_trend(scenario)
+            # Generate the event and trend CSV files
+            self.get_event(scenario)
+            self.get_trend(scenario)
 
-        # Move the files from source paths to destination paths
-        for source_path, destination_path in zip(source_paths, destination_paths):
-            # Move the file using shutil.move()
-            shutil.move(source_path, destination_path)
-            print(f"File successfully moved from {source_path} to {destination_path}")
+            # Move the files from source paths to destination paths
+            for source_path, destination_path in zip(source_paths, destination_paths):
+                # Move the file using shutil.move()
+                shutil.move(source_path, destination_path)
+                print(f"File successfully moved from {source_path} to {destination_path}")
 
-        print(f"All files for scenario '{scenario_id}' moved to {scenario_folder_path}")
+            print(f"All files for scenario '{scenario_id}' moved to {scenario_folder_path}")
+
+            # Возвращаем успешный ответ
+            return HttpResponse(status=200)
+        except Exception as e:
+            # Обработка ошибок здесь
+            print(f"An unexpected error occurred: {e}")
+            return HttpResponse(status=500)
 
     def get_event(self, scenario):
         try:
@@ -154,7 +162,7 @@ class ExportScenario(APIView):
         # Concatenate test row to pivot data
             df_event = pd.concat([test_row_df, df_event], ignore_index=True)
         
-            csv_file_path = 'TrendEvent/Event.csv'  # Specify the path where you want to save the CSV file
+            csv_file_path = 'TrendEvent/Events1.csv'  # Specify the path where you want to save the CSV file
             df_event.to_csv(csv_file_path, index=False)
             print(f"Data saved to {csv_file_path}.")
                
@@ -220,7 +228,7 @@ class ExportScenario(APIView):
             pivot_data = pd.concat([test_row_df, pivot_data.reset_index()], ignore_index=True)
                                
             # Save the DataFrame to a CSV file
-            csv_file_path = 'TrendEvent/Trend.csv'  # Specify the path for saving the CSV file
+            csv_file_path = 'TrendEvent/Trends1.csv'  # Specify the path for saving the CSV file
             pivot_data.to_csv(csv_file_path, index=False)
             print(f"Data saved to {csv_file_path}.")
                 
