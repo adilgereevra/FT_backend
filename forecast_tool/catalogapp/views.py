@@ -242,4 +242,113 @@ class RunScenario(APIView):
 
 
 class Test(APIView):
+<<<<<<< HEAD
     pass
+=======
+    trend_set_name = 'вфысфысс'
+    trend = TrendsClass.objects.get(trends_set_name=trend_set_name)
+    trend_set_id = trend.trends_set_id
+    main_data_trend = MainClass.objects.filter(
+    data_source_type=MainClass.TRENDS, 
+    data_source_id=trend_set_id).values(
+    'object_instance_id',  # This will keep object_instance_id
+    'value',
+    'object_type_property'# Other fields you want to keep
+    )
+
+    # Convert list of dictionaries into a DataFrame
+    main_df = pd.DataFrame(list(main_data_trend))
+    
+    # Fetch object_instance_name separately
+    object_instance_data = ObjectInstance.objects.values('object_instance_id', 'object_instance_name')
+    object_type_property = ObjectTypeProperty.objects.values('object_type_property_id', 'object_type_property_name')
+    
+    # Convert object_instance_data into a dictionary for faster lookup
+    object_instance_dict = {obj['object_instance_id']: obj['object_instance_name'] for obj in object_instance_data}
+    object_property_dict = {obj['object_type_property_id']: obj['object_type_property_name'] for obj in object_type_property}
+    
+    # Replace object_instance_id with object_instance_name in main_df
+    main_df['object_instance_name'] = main_df['object_instance_id'].map(object_instance_dict)
+    main_df['object_type_property'] = main_df['object_type_property'].map(object_property_dict)
+    print(main_df)
+    main_df.rename(columns={'object_instance_name': 'Well_name'}, inplace=True)
+    # Define the desired order of object_type_property values
+    desired_order = [
+        'GOR_Date', 'GOR_Initial', 'GOR_Slope',
+        'c6_gor', 'c5_gor', 'c4_gor', 'c3_gor', 'c2_gor',
+        'SBHP_Date', 'SBHP_Initial', 'SBHP_Slope',
+        'c6_sbhp', 'c5_sbhp', 'c4_sbhp', 'c3_sbhp', 'c2_sbhp',
+        'WCT_Date', 'WCT_Initial', 'WTC_Slope',
+        'WCT_SI_Criteria', 'WCT_Delay',
+        'PI_C_Date', 'c6_PI', 'c5_PI', 'c4_PI', 'c3_PI', 'c2_PI', 'c1_PI', 'c0_PI'
+    ]
+
+    # Convert 'object_type_property' to categorical with desired order
+    main_df['object_type_property'] = pd.Categorical(main_df['object_type_property'], categories=desired_order, ordered=False)
+    # Pivot the DataFrame
+    pivot_data = main_df.pivot_table(index='Well_name', columns='object_type_property', values='value')
+    # Reset the index to make 'object_instance_name' a regular column
+    pivot_data.reset_index(inplace=True)
+
+    print(pivot_data)
+
+   
+    pivot_data.to_csv('formatted_file.csv', index=False)
+
+
+
+
+
+# class Test(APIView):
+#     trend_set_name = 'tesy6'
+#     trend = TrendsClass.objects.get(trends_set_name=trend_set_name)
+#     trend_set_id = trend.trends_set_id
+    
+#     main_data_trend = MainClass.objects.filter(data_source_type=MainClass.TRENDS, data_source_id=trend_set_id)
+    
+#     # Получаем данные из ObjectInstance
+#     object_instance_data = ObjectInstance.objects.all().values('object_instance_id', 'object_instance_name')
+#     object_instance_dict = {item['object_instance_id']: item['object_instance_name'] for item in object_instance_data}
+
+#     # Создаем словарь, содержащий для каждого типа данных (GOR, SBHP и т. д.) список столбцов
+#     columns_dict = {
+#         'GOR': ['GOR_Date', 'GOR_Initial', 'GOR_Slope', 'c6_gor','c5_gor','c4_gor','c3_gor','c2_gor'],
+#         'SBHP': ['SBHP_Date', 'SBHP_Initial', 'SBHP_Slope', 'c6_sbhp','c5_sbhp','c4_sbhp','c3_sbhp','c2_sbhp'],
+#         'Watercut': ['WCT_Date', 'WCT_Initial', 'WTC_Slope', 'WCT_SI_Criteria','WCT_Delay'],
+#         'PI': ['PI_C_Date', 'c6_PI','c5_PI','c4_PI','c3_PI','c2_PI','c1_PI','c0_PI']
+#     }
+
+#     # Создаем список столбцов для DataFrame
+#     columns = ['object_instance_id']
+#     for columns_list in columns_dict.values():
+#         columns.extend(columns_list)
+
+#     # Создаем список значений для каждого объекта и добавляем его в список
+#     main_data_list = []
+#     for item in main_data_trend:
+#         data_dict = {
+#             'object_instance_id': object_instance_dict.get(item.object_instance_id, ''),
+#             # Добавьте другие поля из MainClass, если необходимо
+#         }
+#         main_data_list.append(data_dict)
+#     print(main_data_list)
+#     # Создаем DataFrame из списка данных
+#     main_df = pd.DataFrame(main_data_list)
+
+#     # Если столбец 'object_instance_name' отсутствует в main_data_trend, добавьте его вручную
+#     # main_df['object_instance_name'] = ...
+
+#     # Группируем данные по object_instance_name и агрегируем значения value
+#     transformed_df = main_df.groupby('object_instance_id')['value'].apply(list).reset_index()
+
+#     # Если нужно, заменяем пустые значения в столбце 'value' на пустой список
+#     transformed_df['value'] = transformed_df['value'].apply(lambda x: x if isinstance(x, list) else [])
+
+#     # Разделяем значения value в отдельные столбцы
+#     df = transformed_df.join(transformed_df['value'].apply(pd.Series).add_prefix('value'))
+#     df.drop('value', axis=1, inplace=True)
+
+# # Выводим DataFrame и сохраняем его в CSV файл
+#     print(df)
+#     df.to_csv('Trends1.csv', index=False)
+>>>>>>> dabf17562e8ce104f81405ea3dbbc45ff2cb97a1
